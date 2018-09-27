@@ -21,7 +21,7 @@ Steps
 1. **To Change IVDF Time Slice**: In MDP.py, modify the constant called TIME_2_SLICE. The default is 400. Here you will see other options that can be changed as well.
 2. **To display other or intermediate plots**: There is a function called plot_dict located in rplt.py. 
 
-'''python
+
   
     def plot_dict(dict):
       plt.figure()
@@ -29,5 +29,5 @@ Steps
           for value in dict[key]:
               plt.plot(value)
       plt.show()
- '''
+
  By calling this function and providing an the dictionary type argument, you can plot all the data in the dictionary a single plot.
