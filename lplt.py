@@ -14,70 +14,63 @@ from PyQt5.QtWidgets import QCheckBox
 def get_data(name):
 
     data = {}
-    
-    # if name in os.listdir():
-    #     os.chdir(name)
-    # elif name not in os.listdir():
-    #     os.chdir('..')
-    #     os.chdir(name)
-    # else:
-    #     print('FOLDER NOT FOUND')
     os.chdir(name)
 
     for folder in os.listdir():
-        data.update({folder:[]})
+        data.update({folder: []})
 
         for shot in os.listdir(folder):
             data[folder].append(np.ndfromtxt(
-                         folder+'/'+shot, delimiter = '\t'))
+                folder + '/' + shot, delimiter='\t'))
     return data
 
 
-def butter(data, order, cutoff):
+def butter_filter(data, order, cutoff):
 
     buttered = {}
     sos = signal.butter(order, cutoff, btype='low', analog=False, output='sos')
-    
-    correct = 1 #0.004 # Hey, is this necessary??
-    
+
+    correct = 1  # 0.004 # Is this value necessary?
+
     for key in data.keys():
-        buttered.update({key:[]})
-        
+        buttered.update({key: []})
+
         for shot in data[key]:
-            V = np.sqrt(shot[:][:,1]**2)
+            V = np.sqrt(shot[:][:, 1]**2)
             corrected = correct * signal.sosfiltfilt(sos, V)
             buttered[key].append(corrected)
-    
+
     return buttered
 
 
 def butter_avg(buttered):
-    
+
     avg = {}
-    
+
     for key in buttered.keys():
-        avg.update({key:(np.sum(buttered[key], axis = 0)/len(buttered[key]))})
-    
+        avg.update({key: (np.sum(buttered[key], axis=0) / len(buttered[key]))})
+
     return avg
 
 
 def density(avg):
-    
-    temp_estimate = 10 # eV
-    temp_eV = temp_estimate*1.16E4
+
+    temp_estimate = 10  # eV
+    temp_eV = temp_estimate * 1.16E4
     boltz = 1.38E-23
     area_of_probe = 1.749E-5
     electron_charge = 1.602E-19
     mass = 6.67E-26
 
-    const = 0.6 * electron_charge * area_of_probe * np.sqrt(boltz * temp_eV / mass)
+    const = 0.6 * electron_charge * area_of_probe * \
+        np.sqrt(boltz * temp_eV / mass)
 
     density = {}
-    time_axis = np.linspace(1,10000, num = 10000)/10
+    time_axis = np.linspace(1, 10000, num=10000) / 10
 
     for key in avg.keys():
-        density.update({key: avg[key]/const})
-    
+        density.update({key: avg[key] / const})
+
     return time_axis, density
 
 
