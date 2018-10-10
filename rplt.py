@@ -14,13 +14,14 @@ def get_data(name):
 
     data = {}
 
-    if name in os.listdir():
-        os.chdir(name)
-    elif name not in os.listdir(): 
-        os.chdir('..')
-        os.chdir(name)
-    else:
-        print('FOLDER NOT FOUND')
+    # if name in os.listdir():
+    #     os.chdir(name)
+    # elif name not in os.listdir(): 
+    #     os.chdir('..')
+    #     os.chdir(name)
+    # else:
+    #     print('FOLDER NOT FOUND')
+    os.chdir(name)
 
     for folder in os.listdir():
 
