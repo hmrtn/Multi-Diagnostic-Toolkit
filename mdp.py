@@ -1,5 +1,10 @@
+# APL
+# University of Washington
+# Hans Martin
+
+
 import rplt
-import lplt
+import lplt # Import dependent libs, can be cleaned
 import splt
 
 import matplotlib.pyplot as plt
@@ -22,27 +27,36 @@ class MainWindow(QDialog):
 
         self.setWindowTitle('Multi-Diagnostic Plotter 1.3.0')
         self.setWindowIcon(QIcon('assets/ic_aplotter.png'))
-        self.setMinimumSize(QSize(350, 320))
+        self.setMinimumSize(QSize(350, 320)) # Set main window dimensions
         
+        # Calls to create options grid below statusbar 
         self.createGrid()
 
-        list1 = ['Choose Dataset...','Langmuir', 'REFA', 'Nude Faraday', 'Single Dataset']
+        # Choose plot type combobox in statusbar
+        list1 = ['Choose Dataset...',
+                'Langmuir', 
+                'REFA', 
+                'Nude Faraday', 
+                'Single Dataset']
         self.choose = QComboBox(self)
         self.choose.addItems(list1)
+        
+        # Call to update layout on list index change
         self.choose.currentIndexChanged.connect(self.chooseLayout, self.choose.currentIndex())
+
         self.plot = QPushButton('Plot',self)
         self.browseButton = QPushButton('Browse', self)
         self.dirLoc = QLineEdit('C:\\')
-        windowLayout = QVBoxLayout()
-        statusLayout = QHBoxLayout()
-        browseLayout = QHBoxLayout()
-        
-        windowLayout.addLayout(statusLayout)
 
+        windowLayout = QVBoxLayout() # Vertical layout, for main window
+        statusLayout = QHBoxLayout() # Horizontal Layout, for statusbar
+        browseLayout = QHBoxLayout() # Horizontal Layout, for browse bar
+        
+        windowLayout.addLayout(statusLayout) 
+        
         statusLayout.addWidget(self.choose)
         statusLayout.addWidget(self.plot)
         windowLayout.addWidget(self.optionsBox)
-
         browseLayout.addWidget(QLabel('Location:'))
         browseLayout.addWidget(self.dirLoc)
         browseLayout.addWidget(self.browseButton)
@@ -51,7 +65,11 @@ class MainWindow(QDialog):
         windowLayout.addLayout(browseLayout)
         
         self.show()
-
+        
+        ##
+        # Create textboxes, checkboxes, buttons, etc 
+        # with filled in default values
+        ##
         self.tof = QCheckBox('Time Of Flight')
         self.tts = QLineEdit('400')
         self.subplt = QCheckBox('Show Subplot')
@@ -67,13 +85,17 @@ class MainWindow(QDialog):
         self.ds_dlp = QRadioButton('Langmuir')
 
         self.ptype = QComboBox(self)
-        self.ptypeList = ['Choose Plot Type...','Raw', 'Butterworth Filter', 'Median', 'Spline']
+        self.ptypeList = ['Choose Plot Type...',
+                            'Raw', 
+                            'Butterworth Filter', 
+                            'Median', 
+                            'Spline']
         self.ptype.addItems(self.ptypeList)
 
-
-        # self.browseButton.clicked.connect(self.getFiles)
-        
-
+    ##
+    # Checks index of plot type in status bar and updates 
+    # respective layout based on index value
+    ##
     def chooseLayout(self, ind):
         
         self.clearLayout(self.layout)
@@ -89,9 +111,9 @@ class MainWindow(QDialog):
 
             self.layoutRPA()
 
-        elif ind is 3:
+        elif ind is 3: # NFP - Incomplete
 
-            self.layout.addWidget(QLabel('In Progress'))
+            self.layout.addWidget(QLabel('In Progress')) 
         
         elif ind is 4: 
             
@@ -105,14 +127,22 @@ class MainWindow(QDialog):
         self.layout.setColumnStretch(0,0)
         self.optionsBox.setLayout(self.layout)
 
-
+    ## 
+    # Clear layout at every index update to avoid 
+    # extra objects being created/duplicated
+    ##
     def clearLayout(self, layout):
         
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().setParent(None)
-
+    
+    ##
+    # On each layout update:
+    # gui objects are added according to row and column 
+    # changes state of plot button and type of parsing 
+    ##
     def layoutRPA(self):
 
         self.layout.addWidget(self.subplt, 0, 0)
@@ -133,7 +163,6 @@ class MainWindow(QDialog):
         self.layout.addWidget(self.volt_stp, 6, 2)
         
         self.plot.clicked.connect(self.pushRPA)
-        #self.browseButton.clicked.connect(lambda:self.getFiles())
         self.browseButton.clicked.connect(lambda:self.getFiles('folder'))
 
     
@@ -168,7 +197,11 @@ class MainWindow(QDialog):
         self.plot.clicked.connect(self.pushSingle)
         self.browseButton.clicked.connect(lambda:self.getFiles('file'))
         
-    
+    ##
+    # Each push function is called via respective plotbutton layout
+    # on push call -> read state of each gui object ->
+    # create new plot window object filled with plotted data
+    ##
     def pushRPA(self):
         
         order = int(self.orderflt.text())
@@ -204,6 +237,7 @@ class MainWindow(QDialog):
         
         PlotWindow.plotSingle(self, order, cutoff, medWin, smooth, splinePts, index)
 
+    # Used to determine file explorer file type expectation
     def getFiles(self, dirType='folder'):
         if dirType is 'folder':
             self.fname = QFileDialog.getExistingDirectory()
@@ -212,7 +246,9 @@ class MainWindow(QDialog):
         
         self.dirLoc.setText(self.fname)
 
-
+##
+# Called to create new plotwindow object - i.e. empty window
+##
 class PlotWindow(QDialog):
     
     def __init__(self):
@@ -230,6 +266,11 @@ class PlotWindow(QDialog):
         self.setLayout(layout)
         self.show()
     
+    ##
+    # Each plot function will call for respective 
+    # transformation and plot appearance. 
+    # The plot data is parsed explicitly to avoid error.
+    ##
     def plotRPA(self, order=2, cutoff=0.04, tts=400, medWin=9, smooth=4, splinePts=100, stepV=2, subplt=False):
         
         raw_rpa = rplt.get_data(self.fname)
@@ -261,15 +302,14 @@ class PlotWindow(QDialog):
             plt.plot(time, density[key],label=key)
             plt.legend(prop={'size': 7})
             
-            
-            if tof:
+            if tof: # if time of flight is checked
                 xmaxPos = np.argmax(density[key], axis=0)/10
                 ymaxPos = np.max(density[key])
                 plt.axvline(x=xmaxPos, color ='r', linestyle='--')
-                #print(xmaxPos)
                 textstr = (xmaxPos)
                 props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-                plt.text(0.1, 0.95, textstr, fontsize=14, verticalalignment='center', bbox=props)            
+                plt.text(0.1, 0.95, textstr, fontsize=14, verticalalignment='center', bbox=props)
+
         plt.xlabel('Time ($\mu$s)'); plt.ylabel('$n_{e}$ ($m^{-3}$)')
         plt.title('Plasma Density')
         plt.minorticks_on()
@@ -285,7 +325,7 @@ class PlotWindow(QDialog):
             print()
         elif index is 2: 
             plt.figure()
-            plt.title(self.fname +' Butterworth Filter', fontsize=8)
+            #plt.title(self.fname +' Butterworth Filter', fontsize=8)
             #plt.xlabel(''); plt.ylabel('')
             plt.minorticks_on()
             plt.grid(which = 'major', alpha = 0.5); plt.grid(which = 'minor', alpha = 0.2)
