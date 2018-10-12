@@ -5,6 +5,7 @@
 
 import sys
 import os
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -215,7 +216,7 @@ class MainWindow(QDialog):
         smooth = int(self.smooth_spline.text())
         splinePts = int(self.spline_pts.text())
         stepV = int(self.volt_stp.text())
-        subplt = self.subplt.isChecked()
+        subplt = int(self.subplt.isChecked())
 
         PlotWindow.plotRPA(self, order,
                            cutoff, tts,
@@ -345,20 +346,34 @@ class PlotWindow(QDialog):
     def plotSingle(self, order=2, cutoff=0.05, medWin=9,
                    smooth=4, splinePts=100, index=0):
 
-        raw = splt.get_data(self.fname)
-        buttered = splt.butter_filter(raw, order, cutoff)
-        median = splt.median_filter(buttered, 9)
+        # raw = splt.get_data(self.fname)
+        # buttered = splt.butter_filter(raw, order, cutoff)
+        # median = splt.median_filter(buttered, 9)
         if index is 1:
-            print()
+            raw = splt.get_data(self.fname)
+            #print('gumb')
+            #plt.figure()
+            #plt.plot(raw, '.')
+            splt.plot_dict(raw)
+            #plt.show()
         elif index is 2:
-            plt.figure()
-            plt.minorticks_on()
-            plt.grid(which='major', alpha=0.5)
-            plt.grid(which='minor', alpha=0.2)
+            raw = splt.get_data(self.fname)
+            buttered = splt.butter_filter(raw, order, cutoff)
+
+            # plt.figure()
+            # plt.minorticks_on()
+            # plt.grid(which='major', alpha=0.5)
+            # plt.grid(which='minor', alpha=0.2)
             splt.plot_dict(buttered)
-            plt.show()
+            # plt.show()
         elif index is 3:
+            raw = splt.get_data(self.fname)
+            buttered = splt.butter_filter(raw, order, cutoff)
+            median = splt.median_filter(buttered, 9)
+
             splt.plot_dict(median)
+        elif index is 0:
+            print('what')
 
 def main():
 

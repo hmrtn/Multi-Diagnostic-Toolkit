@@ -1,8 +1,9 @@
 import sys
 import os
-import matplotlib.pyplot as plt
+
 import numpy as np
-import os
+import matplotlib.pyplot as plt
+
 from scipy import signal
 from scipy.signal import butter, lfilter
 from scipy.stats import maxwell
@@ -13,13 +14,14 @@ from scipy import interpolate as inter
 def get_data(name):
 
     data = {}
-    return data.update({name: np.ndfromtxt(name, delimiter='\t')})
+    data.update({name: np.ndfromtxt(name, delimiter='\t')})
+    return data
 
 
 def butter_filter(data, order, cutoff):
     buttered = {}
     sos = signal.butter(order, cutoff, btype='low', analog=False, output='sos')
-    for shot in sorted(data):  # this sorts in decending order (i.e 0-10)
+    for shot in data:  # this sorts in decending order (i.e 0-10)
         corrected = np.array(signal.sosfiltfilt(sos, data[shot][:, 1]))
         buttered.update({shot: [corrected]})
     return buttered
@@ -57,11 +59,15 @@ def spline_fit(median, smooth, spline_num, rtrn=None):
         return xnew, ynew
 
 
-def plot_dict(dict):
+def plot_dict(dic):
 
-    for key in dict.keys():
-        for value in dict[key]:
-            plt.plot(value)
+    plt.figure()
+    plt.minorticks_on()
+    plt.grid(which='major', alpha=0.5)
+    plt.grid(which='minor', alpha=0.2)
+    for k,v in dic.items():
+        plt.plot(v)
+    plt.show()
 
 
 if __name__ == 'main':
