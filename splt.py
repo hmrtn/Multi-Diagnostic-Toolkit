@@ -1,9 +1,7 @@
 import sys
 import os
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 from scipy import signal
 from scipy.signal import butter, lfilter
 from scipy.stats import maxwell
@@ -66,7 +64,8 @@ def plot_dict(dic):
     plt.grid(which='major', alpha=0.5)
     plt.grid(which='minor', alpha=0.2)
     for k,v in dic.items():
-        plt.plot(v)
+        plt.title(k)
+        plt.plot(v[:,0],v[:,1])
     plt.show()
 
 
