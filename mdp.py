@@ -51,7 +51,8 @@ class MainWindow(QDialog):
 
         self.plot = QPushButton('Plot', self)
         self.browseButton = QPushButton('Browse', self)
-        self.dirLoc = QLineEdit('C:\\')
+        self.default_dirLoc = 'C:\\'
+        self.dirLoc = QLineEdit(self.default_dirLoc)
 
         windowLayout = QVBoxLayout()    # Vertical layout, for main window
         statusLayout = QHBoxLayout()    # Horizontal Layout, for statusbar
@@ -173,6 +174,8 @@ class MainWindow(QDialog):
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
 
     def layoutDLP(self):
+        
+        default_dir = os.getcwd()+'/DLP'
 
         self.layout.addWidget(self.tof, 0, 0)
         self.layout.addWidget(self.export, 2, 0)
@@ -180,6 +183,7 @@ class MainWindow(QDialog):
         self.layout.addWidget(self.orderflt, 0, 2)
         self.layout.addWidget(QLabel('Cutoff Freq.:'), 1, 1)
         self.layout.addWidget(self.cutflt, 1, 2)
+        self.dirLoc.setText(default_dir)
 
         self.plot.clicked.connect(self.pushDLP)
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
@@ -346,16 +350,13 @@ class PlotWindow(QDialog):
     def plotSingle(self, order=2, cutoff=0.05, medWin=9,
                    smooth=4, splinePts=100, index=0):
 
-        # raw = splt.get_data(self.fname)
-        # buttered = splt.butter_filter(raw, order, cutoff)
-        # median = splt.median_filter(buttered, 9)
+
         if index is 1:
+            
             raw = splt.get_data(self.fname)
-            #print('gumb')
-            #plt.figure()
-            #plt.plot(raw, '.')
+
             splt.plot_dict(raw)
-            #plt.show()
+
         elif index is 2:
             raw = splt.get_data(self.fname)
             buttered = splt.butter_filter(raw, order, cutoff)
