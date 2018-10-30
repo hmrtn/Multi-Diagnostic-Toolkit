@@ -17,11 +17,12 @@ def get_data(name):
     os.chdir(name)
 
     for folder in os.listdir():
-        data.update({folder: []})
+        if not folder == '.gitignore':
+            data.update({folder: []})
 
-        for shot in os.listdir(folder):
-            data[folder].append(np.ndfromtxt(
-                folder + '/' + shot, delimiter='\t'))
+            for shot in os.listdir(folder):
+                data[folder].append(np.ndfromtxt(
+                    folder + '/' + shot, delimiter='\t'))
     return data
 
 
