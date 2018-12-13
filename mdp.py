@@ -319,23 +319,26 @@ class PlotWindow(QDialog):
         lowpass_dlp = lplt.butter_filter(raw_dlp, order, cutoff)
         average_dlp = lplt.butter_avg(lowpass_dlp)
         time, density = lplt.density(average_dlp)
-        plt.figure(figsize=(9, 5))
+        #plt.figure(figsize=(9, 5))
+        
+        ax, fig = plt.subplots()
+
 
         for key in density.keys():
-            plt.plot(time, density[key], label=key)
-            plt.legend(prop={'size': 7})
+            fig.plot(time, density[key], label=key)
+            fig.legend(prop={'size': 7})
 
             if tof:     # if time of flight is checked
                 xmaxPos = np.argmax(density[key], axis=0) / 10
-                ymaxPos = np.max(density[key])
-                plt.axvline(x=xmaxPos, color='r', linestyle='--')
+                yminPos = np.min(density[key])
+                fig.axvline(x=xmaxPos, color='r', linestyle='--')
                 textstr = (xmaxPos)
-                props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
-                plt.text(
-                    0.1,
-                    0.95,
+                props = dict(boxstyle='square', facecolor='white', alpha=0.0)
+                fig.text(
+                    xmaxPos,
+                    yminPos,
                     textstr,
-                    fontsize=14,
+                    fontsize=9,
                     verticalalignment='center',
                     bbox=props)
 
