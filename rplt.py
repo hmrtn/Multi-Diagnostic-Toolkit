@@ -92,6 +92,7 @@ def spline_fit(median, smooth, spline_num, rtrn=None):
 def normalize(x):
     x = np.asarray(x)
     return (x - x.min()) / (np.ptp(x))
+    
 # Takes the 1st derivative of of the spline
 def ivdf(xnew, spl, window=9):
 
