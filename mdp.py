@@ -13,7 +13,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QDialog, QLabel, QFileDialog, QWidget, QGroupBox,
 QHBoxLayout, QPushButton, QRadioButton, QVBoxLayout, QCheckBox, QLineEdit, 
-QComboBox, QGridLayout, QApplication)
+QComboBox, QGridLayout, QApplication, QSpacerItem, QSizePolicy)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navbar
 
@@ -29,7 +29,7 @@ class MainWindow(QDialog):
 
         super(MainWindow, self).__init__(parent)
 
-        self.setWindowTitle('Multi-Diagnostic Plotter 1.3.1')
+        self.setWindowTitle('Multi-Diagnostic Plotter 1.3.2')
         self.setWindowIcon(QIcon('assets/ic_aplotter.png'))
         self.setMinimumSize(QSize(350, 320))    # Set main window dimensions
 
@@ -97,6 +97,7 @@ class MainWindow(QDialog):
                           'Median',
                           'Spline']
         self.ptype.addItems(self.ptypeList)
+        self.errortxt = 'ERROR: CHECK DIRECTORY INFORMATION'
 
     ##
     # Checks index of plot type in status bar and updates
@@ -211,6 +212,7 @@ class MainWindow(QDialog):
     # on push call -> read state of each gui object ->
     # create new plot window object filled with plotted data
     ##
+    
     def pushRPA(self):
 
         order = int(self.orderflt.text())
@@ -221,19 +223,24 @@ class MainWindow(QDialog):
         splinePts = int(self.spline_pts.text())
         stepV = int(self.volt_stp.text())
         subplt = int(self.subplt.isChecked())
-
-        PlotWindow.plotRPA(self, order,
-                           cutoff, tts,
-                           medWin, smooth,
-                           splinePts, stepV, subplt)
-
+        try:
+            PlotWindow.plotRPA(self, order,
+                            cutoff, tts,
+                            medWin, smooth,
+                            splinePts, stepV, subplt)
+        except (AttributeError, NotADirectoryError):
+            print(self.errortxt)
+    
     def pushDLP(self):
 
         order = int(self.orderflt.text())
         cutoff = float(self.cutflt.text())
         tof = self.tof.isChecked()
 
-        PlotWindow.plotDLP(self, order, cutoff, tof)
+        try:
+            PlotWindow.plotDLP(self, order, cutoff, tof)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
 
     def pushSingle(self):
 
@@ -244,7 +251,8 @@ class MainWindow(QDialog):
         splinePts = int(self.spline_pts.text())
         index = int(self.ptype.currentIndex())
 
-        PlotWindow.plotSingle(
+        try: 
+            PlotWindow.plotSingle(
             self,
             order,
             cutoff,
@@ -252,6 +260,8 @@ class MainWindow(QDialog):
             smooth,
             splinePts,
             index)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
 
     # Used to determine file explorer file type expectation
     def getFiles(self, dirType='folder'):
@@ -293,6 +303,11 @@ class PlotWindow(QDialog):
     def plotRPA(self, order=2, cutoff=0.04, tts=400, medWin=9,
                 smooth=4, splinePts=100, stepV=2, subplt=False):
 
+        # try: 
+        #     raw_rpa = rplt.get_data(self.fname)
+        # except AttributeError:
+        #     print("Could not convert data to an integer.")
+            
         raw_rpa = rplt.get_data(self.fname)
         lowpass_rpa = rplt.butter_filter(raw_rpa, order, cutoff)
         slice_rpa = rplt.time_slice(lowpass_rpa, tts)
@@ -377,7 +392,7 @@ class PlotWindow(QDialog):
 
             splt.plot_dict(median)
         elif index is 0:
-            print('what')
+            print('NOT READY')
 
 def main():
 
