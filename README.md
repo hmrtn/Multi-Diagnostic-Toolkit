@@ -22,8 +22,9 @@ The main interface features a dropdown menu to choose what type of data MDP will
 - Export transformed data
 
 ### Known Bugs / Future Additions
-- Normalized IVDF trace
-- Time of Flight not properly displaying time interval
+- ~~Normalized IVDF trace~~ (v1.3.2)
+- ~~Time of Flight not properly displaying time interval~~ (v1.3.2)
+- ~~Unexpected crash upon directory error~~ (v1.3.2)
 - No default directories on menu selection
 - Ambiguous Subplot for REFA
 - NFP Analysis UI
