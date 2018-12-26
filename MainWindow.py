@@ -20,8 +20,9 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navbar
 import rplt
 import lplt     # Import dependent libs for plotting
 import splt
+import PlotWindow
 
-VERSION = '1.4'
+VERSION = '1.5'
 
 class MainWindow(QDialog):
 
@@ -51,8 +52,8 @@ class MainWindow(QDialog):
 
         self.plot = QPushButton('Plot', self)
         self.browseButton = QPushButton('Browse', self)
-        self.default_dirLoc = 'C:\\'
-        self.dirLoc = QLineEdit(self.default_dirLoc)
+        self.default_directory = 'C:\\'
+        self.dirLoc = QLineEdit(self.default_directory)
 
         windowLayout = QVBoxLayout()    # Vertical layout, for main window
         statusLayout = QHBoxLayout()    # Horizontal Layout, for statusbar
@@ -72,10 +73,10 @@ class MainWindow(QDialog):
 
         self.show()
 
-        ##
+        
         # Create textboxes, checkboxes, buttons, etc
         # with filled in default values
-        ##
+        
         self.tof = QCheckBox('Time Of Flight')
         self.tts = QLineEdit('400')
         self.subplt = QCheckBox('Show Subplot')
@@ -101,10 +102,10 @@ class MainWindow(QDialog):
         self.ptype.addItems(self.ptypeList)
         self.errortxt = 'ERROR: CHECK DIRECTORY INFORMATION'
 
-    ##
+    
     # Checks index of plot type in status bar and updates
     # respective layout based on index value
-    ##
+    
     def chooseLayout(self, ind):
 
         self.clearLayout(self.layout)
@@ -137,10 +138,10 @@ class MainWindow(QDialog):
         self.layout.setColumnStretch(0, 0)
         self.optionsBox.setLayout(self.layout)
 
-    ##
+    
     # Clear layout at every index update to avoid
     # extra objects being created/duplicated
-    ##
+    
     def clearLayout(self, layout):
 
         while layout.count():
@@ -148,12 +149,13 @@ class MainWindow(QDialog):
             if child.widget():
                 child.widget().setParent(None)
 
-    ##
+    
     # On each layout update:
     # gui objects are added according to row and column
     # changes state of plot button and type of parsing
-    ##
+    
     def layoutRPA(self):
+        default_dir = os.getcwd()+'/RPA'
 
         self.layout.addWidget(self.subplt, 0, 0)
         self.layout.addWidget(self.export, 2, 0)
@@ -211,11 +213,11 @@ class MainWindow(QDialog):
         self.plot.clicked.connect(self.pushSingle)
         self.browseButton.clicked.connect(lambda: self.getFiles('file'))
 
-    ##
+    
     # Each push function is called via respective plotbutton layout
     # on push call -> read state of each gui object ->
     # create new plot window object filled with plotted data
-    ##
+    
     
     def pushRPA(self):
 
@@ -235,7 +237,7 @@ class MainWindow(QDialog):
         except (AttributeError, NotADirectoryError):
             print(self.errortxt)
     
-    def pushDLP(self):
+    def pushDLP(self): 
 
         order = int(self.orderflt.text())
         cutoff = float(self.cutflt.text())
@@ -277,134 +279,12 @@ class MainWindow(QDialog):
 
         self.dirLoc.setText(self.fname)
 
-##
-# Called to create new plotwindow object - i.e. empty window
-##
-
-
-class PlotWindow(QDialog):
-
-    def __init__(self):
-
-        super(PlotWindow, self).__init__()
-
-        self.figure = plt.figure()
-        self.canvas = FigCanvas(self.figure)
-        self.toolbar = Navbar(self.canvas, self)
-
-        layout = QVBoxLayout()
-        layout.addWidget(self.canvas)
-        layout.addWidget(self.toolbar)
-
-        self.setLayout(layout)
-        self.show()
-
-    ##
-    # Each plot function will call for respective
-    # transformation and plot appearance.
-    # The plot data is parsed explicitly to avoid error.
-    ##
-    def plotRPA(self, order=2, cutoff=0.04, tts=400, medWin=9,
-                smooth=4, splinePts=100, stepV=2, subplt=False):
-
-        # try: 
-        #     raw_rpa = rplt.get_data(self.fname)
-        # except AttributeError:
-        #     print("Could not convert data to an integer.")
-            
-        raw_rpa = rplt.get_data(self.fname)
-        lowpass_rpa = rplt.butter_filter(raw_rpa, order, cutoff)
-        slice_rpa = rplt.time_slice(lowpass_rpa, tts)
-        median_rpa = rplt.median_filter(slice_rpa, medWin)
-        x, spl = rplt.spline_fit(median_rpa, smooth, splinePts, 'spline')
-        x, y = rplt.ivdf(x, spl)
-
-        if subplt:
-            rplt.plot_dict(lowpass_rpa)
-
-        plt.figure(figsize=(9, 5))
-        plt.plot(x * stepV, y, '+-')
-        plt.title('Ion Velocity Distribution')
-        plt.xlabel('Energy (eV)')
-        plt.ylabel('I.V.D.F (Arb. units)')
-        plt.minorticks_on()
-        plt.grid(which='major', alpha=0.5)
-        plt.grid(which='minor', alpha=0.2)
-        plt.show()
-
-    def plotDLP(self, order=2, cutoff=0.05, tof=False):
-
-        raw_dlp = lplt.get_data(self.fname)
-        lowpass_dlp = lplt.butter_filter(raw_dlp, order, cutoff)
-        average_dlp = lplt.butter_avg(lowpass_dlp)
-        time, density = lplt.density(average_dlp)
-        #plt.figure(figsize=(9, 5))
-        
-        ax, fig = plt.subplots()
-
-
-        for key in density.keys():
-            fig.plot(time, density[key], label=key)
-            fig.legend(prop={'size': 7})
-
-            if tof:     # if time of flight is checked
-                xmaxPos = np.argmax(density[key], axis=0) / 10
-                yminPos = np.min(density[key])
-                fig.axvline(x=xmaxPos, color='r', linestyle='--')
-                textstr = (xmaxPos)
-                props = dict(boxstyle='square', facecolor='white', alpha=0.0)
-                fig.text(
-                    xmaxPos,
-                    yminPos,
-                    textstr,
-                    fontsize=9,
-                    verticalalignment='center',
-                    bbox=props)
-
-        plt.xlabel(r'Time ($\mu$s)')
-        plt.ylabel('$n_{e}$ ($m^{-3}$)')
-        plt.title('Plasma Density')
-        plt.minorticks_on()
-        plt.grid(which='major', alpha=0.5)
-        plt.grid(which='minor', alpha=0.2)
-        plt.show()
-
-    def plotSingle(self, order=2, cutoff=0.05, medWin=9,
-                   smooth=4, splinePts=100, index=0):
-
-
-        if index is 1:
-            
-            raw = splt.get_data(self.fname)
-
-            splt.plot_dict(raw)
-
-        elif index is 2:
-            raw = splt.get_data(self.fname)
-            buttered = splt.butter_filter(raw, order, cutoff)
-
-            # plt.figure()
-            # plt.minorticks_on()
-            # plt.grid(which='major', alpha=0.5)
-            # plt.grid(which='minor', alpha=0.2)
-            splt.plot_dict(buttered)
-            # plt.show()
-        elif index is 3:
-            raw = splt.get_data(self.fname)
-            buttered = splt.butter_filter(raw, order, cutoff)
-            median = splt.median_filter(buttered, 9)
-
-            splt.plot_dict(median)
-        elif index is 0:
-            print('NOT READY')
-
 def main():
 
     app = QApplication(sys.argv)
     main = MainWindow()
     main.show()
     sys.exit(app.exec())
-
 
 if __name__ == '__main__':
 
