@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal
@@ -55,7 +56,7 @@ def spline_fit(median, smooth, spline_num, rtrn=None):
         return xnew, splf
     elif rtrn is 'xy':
         return xnew, ynew
-
+        
 
 def plot_dict(dic):
 
@@ -64,10 +65,13 @@ def plot_dict(dic):
     plt.grid(which='major', alpha=0.5)
     plt.grid(which='minor', alpha=0.2)
     for k,v in dic.items():
-        plt.title(k)
-        plt.plot(v[:,0],v[:,1])
+        plt.title(re.split('/',k)[-1])
+        
+        if type(v) is not list: 
+            plt.plot(np.arange(len(dic.get(k))), dic.get(k)[:,1])
+        else:
+            plt.plot(np.arange(len(v[0])), v[0])
     plt.show()
-
 
 if __name__ == 'main':
     print('Running splt')
