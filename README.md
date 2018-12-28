@@ -1,4 +1,5 @@
 ![alt text](https://raw.githubusercontent.com/hansmrtn/Multi-Diagnostic-Plotter/master/assets/ic_aplotter.png)
+![alt text](https://i.imgur.com/sX4OC3z.png)
 # Multi-Diagnostic Toolkit
 
 The Multi-Diagnostic Toolkit Project (MDP) is a small but powerful tool to transform and display data produced by the University of Washington's Advanced Propulsion Labratory. The MDP's purpose is simplify tedious calculation and manipulation on large datasets of an oscilascope signal that displays in an interactive plot window. The program is designed for use with Advanced Propulsion Laboratory's instruments and data only and is not recommened for use elsewhere. The MDP is designed to be as modular as possible and written in Python 3. 
