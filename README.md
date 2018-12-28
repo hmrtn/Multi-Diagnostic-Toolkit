@@ -1,4 +1,3 @@
-![alt text](https://i.imgur.com/66dHm5Q.png)
 # Multi-Diagnostic Toolkit
 ![alt text](https://i.imgur.com/G1OBNnY.png)
 
@@ -32,3 +31,5 @@ The main interface features a dropdown menu to choose what type of data MDP will
 - Long directory title in plot window for single plots
 - Ambigous UI Location -> Directory
 ###
+
+![alt text](https://i.imgur.com/66dHm5Q.png)
