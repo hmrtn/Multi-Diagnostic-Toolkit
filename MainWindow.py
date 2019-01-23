@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (QDialog, QLabel, QFileDialog, QWidget, QGroupBox,
-QHBoxLayout, QPushButton, QRadioButton, QVBoxLayout, QCheckBox, QLineEdit, 
+QHBoxLayout, QPushButton, QRadioButton, QVBoxLayout, QCheckBox, QLineEdit,
 QComboBox, QGridLayout, QApplication, QSpacerItem, QSizePolicy)
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navbar
@@ -42,6 +42,7 @@ class MainWindow(QDialog):
                  'Langmuir',
                  'REFA',
                  'Nude Faraday',
+                 'Bias Verification',
                  'Single Dataset']
         self.choose = QComboBox(self)
         self.choose.addItems(list1)
@@ -73,10 +74,10 @@ class MainWindow(QDialog):
 
         self.show()
 
-        
+
         # Create textboxes, checkboxes, buttons, etc
         # with filled in default values
-        
+
         self.tof = QCheckBox('Time Of Flight')
         self.tts = QLineEdit('400')
         self.subplt = QCheckBox('Show Subplot')
@@ -90,7 +91,7 @@ class MainWindow(QDialog):
         self.export = QCheckBox('Export Data')
         self.ds_rpa = QRadioButton('REFA')
         self.ds_dlp = QRadioButton('Langmuir')
-        self.verticalSpacer = QSpacerItem(40, 40, QSizePolicy.Minimum, 
+        self.verticalSpacer = QSpacerItem(40, 40, QSizePolicy.Minimum,
                                             QSizePolicy.Expanding)
 
         self.ptype = QComboBox(self)
@@ -102,10 +103,10 @@ class MainWindow(QDialog):
         self.ptype.addItems(self.ptypeList)
         self.errortxt = 'ERROR: CHECK DIRECTORY INFORMATION'
 
-    
+
     # Checks index of plot type in status bar and updates
     # respective layout based on index value
-    
+
     def chooseLayout(self, ind):
 
         self.clearLayout(self.layout)
@@ -123,11 +124,16 @@ class MainWindow(QDialog):
 
             self.layoutRPA()
 
-        elif ind is 3:  # NFP - Incomplete
-
-            self.layout.addWidget(QLabel('In Progress'))
+        elif ind is 3:
+            pass
+            self.layoutNFP()
 
         elif ind is 4:
+
+           self.layoutBiasPlot()
+
+
+        elif ind is 5:
 
             self.layoutSingle()
 
@@ -138,10 +144,10 @@ class MainWindow(QDialog):
         self.layout.setColumnStretch(0, 0)
         self.optionsBox.setLayout(self.layout)
 
-    
+
     # Clear layout at every index update to avoid
     # extra objects being created/duplicated
-    
+
     def clearLayout(self, layout):
 
         while layout.count():
@@ -149,11 +155,11 @@ class MainWindow(QDialog):
             if child.widget():
                 child.widget().setParent(None)
 
-    
+
     # On each layout update:
     # gui objects are added according to row and column
     # changes state of plot button and type of parsing
-    
+
     def layoutRPA(self):
         default_dir = os.getcwd()+'/RPA'
 
@@ -179,7 +185,7 @@ class MainWindow(QDialog):
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
 
     def layoutDLP(self):
-        
+
         default_dir = os.getcwd()+'/DLP'
 
         self.layout.addWidget(self.tof, 0, 0)
@@ -192,6 +198,36 @@ class MainWindow(QDialog):
         self.layout.addItem(self.verticalSpacer)
 
         self.plot.clicked.connect(self.pushDLP)
+        self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
+
+    def layoutNFP(self):
+
+        default_dir = os.getcwd()+'/NFP'
+
+        self.layout.addWidget(self.export, 2, 0)
+        self.layout.addWidget(QLabel('Filter Order:'), 0, 1)
+        self.layout.addWidget(self.orderflt, 0, 2)
+        self.layout.addWidget(QLabel('Cutoff Freq.:'), 1, 1)
+        self.layout.addWidget(self.cutflt, 1, 2)
+        self.dirLoc.setText(default_dir)
+        self.layout.addItem(self.verticalSpacer)
+
+        self.plot.clicked.connect(self.pushNFP)
+        self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
+
+    def layoutBiasPlot(self):
+
+        default_dir = os.getcwd()+'/NFP'
+
+        self.layout.addWidget(self.export, 2, 0)
+        self.layout.addWidget(QLabel('Filter Order:'), 0, 1)
+        self.layout.addWidget(self.orderflt, 0, 2)
+        self.layout.addWidget(QLabel('Cutoff Freq.:'), 1, 1)
+        self.layout.addWidget(self.cutflt, 1, 2)
+        self.dirLoc.setText(default_dir)
+        self.layout.addItem(self.verticalSpacer)
+
+        self.plot.clicked.connect(self.pushBiasPlot)
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
 
     def layoutSingle(self):
@@ -213,12 +249,12 @@ class MainWindow(QDialog):
         self.plot.clicked.connect(self.pushSingle)
         self.browseButton.clicked.connect(lambda: self.getFiles('file'))
 
-    
+
     # Each push function is called via respective plotbutton layout
     # on push call -> read state of each gui object ->
     # create new plot window object filled with plotted data
-    
-    
+
+
     def pushRPA(self):
 
         order = int(self.orderflt.text())
@@ -236,8 +272,8 @@ class MainWindow(QDialog):
                             splinePts, stepV, subplt)
         except (AttributeError, NotADirectoryError):
             print(self.errortxt)
-    
-    def pushDLP(self): 
+
+    def pushDLP(self):
 
         order = int(self.orderflt.text())
         cutoff = float(self.cutflt.text())
@@ -245,6 +281,26 @@ class MainWindow(QDialog):
 
         try:
             PlotWindow.plotDLP(self, order, cutoff, tof)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
+
+    def pushNFP(self):
+
+        order = int(self.orderflt.text())
+        cutoff = float(self.cutflt.text())
+
+        try:
+            PlotWindow.plotBiasVerification(self, order, cutoff)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
+
+    def pushBiasPlot(self):
+
+        order = int(self.orderflt.text())
+        cutoff = float(self.cutflt.text())
+
+        try:
+            PlotWindow.plotBiasVerification(self, order, cutoff)
         except(AttributeError, NotADirectoryError):
             print(self.errortxt)
 
@@ -257,7 +313,7 @@ class MainWindow(QDialog):
         splinePts = int(self.spline_pts.text())
         index = int(self.ptype.currentIndex())
 
-        try: 
+        try:
             PlotWindow.plotSingle(
             self,
             order,
