@@ -17,7 +17,9 @@ from cycler import cycler
 import rplt
 import lplt     # Import dependent libs for plotting
 import splt
-import biasplt
+import bplt
+
+from ErrorClasses import NotImplementedError
 
 
 class PlotWindow(QDialog):
@@ -102,40 +104,66 @@ def plotDLP(self, order=2, cutoff=0.05, tof=False):
     plt.show()
 
 
-def plotNFP(self, order=2, cutoff=0.05):
-    raw_nfp = nplt.get_data(self.fname)
-    lowpass_nfp = nplt.butter_filter(raw_nfp, order, cutoff)
-    max_vals_nfp = biasplt.get_max_vals(lowpass_nfp)
-    Idensity = nplt.Idensity(max_vals_nfp)
-    #plt.figure(figsize=(9, 5))
+def plotNFP(self, order=2, cutoff=0.05, biasplt=False):
 
-    # Setting prop cycle on default rc parameter
-    plt.rc('lines', linewidth=4)
-    plt.rc('axes', prop_cycle=(cycler('color', ['k', 'b', 'r', 'm'])))
+    # Until working, throw NotImplemented error if biasplt == False
+    if biasplt == False:
+        raise NotImplementedError("\n\nNFP plotting not yet implemented")
 
-    ax, fig = plt.subplots()
+    if biasplt == False:
+        raw_nfp = nplt.get_data(self.fname)
+        lowpass_nfp = nplt.butter_filter(raw_nfp, order, cutoff)
+        max_vals_nfp = biasplt.get_max_vals(lowpass_nfp)
+        Idensity = nplt.Idensity(max_vals_nfp)
+        #plt.figure(figsize=(9, 5))
 
-    for id in Idensity.keys():
-        if id == 'L':
-            id_label = 'Left'
-        elif id == 'R':
-            id_label = 'Right'
-        elif id == 'D':
-            id_label = 'Double'
-        elif id == 'T':
-            id_label = 'Triple'
-        else:
-            id_label = 'Other'
-        fig.plot(*zip(*sorted(Idensity[id].items())), 'o', label=id_label)
-        fig.legend(prop={'size': 7})
+        # Setting prop cycle on default rc parameter
+        plt.rc('lines', linewidth=4)
+        plt.rc('axes', prop_cycle=(cycler('color', ['k', 'b', 'r', 'm'])))
 
-    plt.xlabel(r'Radial Position (cm)')
-    plt.ylabel(r'$J$ $\left(\mathrm{A} \, \mathrm{m}^{-2}\right)$')
-    plt.title(r'Plasma Current Density at $V_{bias} = -30 \, V$')
-    plt.minorticks_on()
-    plt.grid(which='major', alpha=0.5)
-    plt.grid(which='minor', alpha=0.2)
-    plt.show()
+        ax, fig = plt.subplots()
+
+        for id in Idensity.keys():
+            if id == 'L':
+                id_label = 'Left'
+            elif id == 'R':
+                id_label = 'Right'
+            elif id == 'D':
+                id_label = 'Double'
+            elif id == 'T':
+                id_label = 'Triple'
+            else:
+                id_label = 'Other'
+            fig.plot(*zip(*sorted(Idensity[id].items())), 'o', label=id_label)
+            fig.legend(prop={'size': 7})
+
+        plt.xlabel(r'Radial Position (cm)')
+        plt.ylabel(r'$J$ $\left(\mathrm{A} \, \mathrm{m}^{-2}\right)$')
+        plt.title(r'Plasma Current Density at $V_{bias} = -30 \, V$')
+        plt.minorticks_on()
+        plt.grid(which='major', alpha=0.5)
+        plt.grid(which='minor', alpha=0.2)
+        plt.show()
+
+    else:
+        raw_nfp = bplt.get_data(self.fname)
+        lowpass_nfp = bplt.butter_filter(raw_nfp, order, cutoff)
+        max_vals_nfp = bplt.get_max_vals(lowpass_nfp)
+        Idensity = bplt.Idensity(max_vals_nfp)
+        #plt.figure(figsize=(9, 5))
+
+        ax, fig = plt.subplots()
+
+        for key in Idensity.keys():
+            fig.plot(*zip(*sorted(Idensity.items())), 'ko')
+
+        plt.xlabel(r'Bias Potential (V)')
+        plt.ylabel(r'$J$ $\left(\mathrm{A} \, \mathrm{m}^{-2} \right)$')
+        plt.title(r'Plasma Current Density at $r = 0$')
+        plt.minorticks_on()
+        plt.grid(which='major', alpha=0.5)
+        plt.grid(which='minor', alpha=0.2)
+        plt.show()
 
 
 def plotSingle(self, order=2, cutoff=0.05, medWin=9,
@@ -167,22 +195,22 @@ def plotSingle(self, order=2, cutoff=0.05, medWin=9,
         print('NOT READY')
 
 
-def plotBiasVerification(self, order=2, cutoff=0.05):
-    raw_nfp = biasplt.get_data(self.fname)
-    lowpass_nfp = biasplt.butter_filter(raw_nfp, order, cutoff)
-    max_vals_nfp = biasplt.get_max_vals(lowpass_nfp)
-    Idensity = biasplt.Idensity(max_vals_nfp)
-    #plt.figure(figsize=(9, 5))
-
-    ax, fig = plt.subplots()
-
-    for key in Idensity.keys():
-        fig.plot(*zip(*sorted(Idensity.items())), 'ko')
-
-    plt.xlabel(r'Bias Potential (V)')
-    plt.ylabel(r'$J$ $\left(\mathrm{A} \, \mathrm{m}^{-2} \right)$')
-    plt.title(r'Plasma Current Density at $r = 0$')
-    plt.minorticks_on()
-    plt.grid(which='major', alpha=0.5)
-    plt.grid(which='minor', alpha=0.2)
-    plt.show()
+# def plotBiasVerification(self, order=2, cutoff=0.05):
+#     raw_nfp = bplt.get_data(self.fname)
+#     lowpass_nfp = bplt.butter_filter(raw_nfp, order, cutoff)
+#     max_vals_nfp = bplt.get_max_vals(lowpass_nfp)
+#     Idensity = bplt.Idensity(max_vals_nfp)
+#     #plt.figure(figsize=(9, 5))
+#
+#     ax, fig = plt.subplots()
+#
+#     for key in Idensity.keys():
+#         fig.plot(*zip(*sorted(Idensity.items())), 'ko')
+#
+#     plt.xlabel(r'Bias Potential (V)')
+#     plt.ylabel(r'$J$ $\left(\mathrm{A} \, \mathrm{m}^{-2} \right)$')
+#     plt.title(r'Plasma Current Density at $r = 0$')
+#     plt.minorticks_on()
+#     plt.grid(which='major', alpha=0.5)
+#     plt.grid(which='minor', alpha=0.2)
+#     plt.show()

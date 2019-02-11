@@ -42,8 +42,8 @@ class MainWindow(QDialog):
                  'Langmuir',
                  'REFA',
                  'Nude Faraday',
-                 'Bias Verification',
                  'Single Dataset']
+
         self.choose = QComboBox(self)
         self.choose.addItems(list1)
 
@@ -81,6 +81,7 @@ class MainWindow(QDialog):
         self.tof = QCheckBox('Time Of Flight')
         self.tts = QLineEdit('400')
         self.subplt = QCheckBox('Show Subplot')
+        self.bplt = QCheckBox('Verify Bias')
         self.orderflt = QLineEdit('2')
         self.cutflt = QLineEdit('0.005')
         self.window = QLineEdit('9')
@@ -125,15 +126,9 @@ class MainWindow(QDialog):
             self.layoutRPA()
 
         elif ind is 3:
-            pass
             self.layoutNFP()
 
         elif ind is 4:
-
-           self.layoutBiasPlot()
-
-
-        elif ind is 5:
 
             self.layoutSingle()
 
@@ -204,6 +199,7 @@ class MainWindow(QDialog):
 
         default_dir = os.getcwd()+'/NFP'
 
+        self.layout.addWidget(self.bplt, 0, 0)
         self.layout.addWidget(self.export, 2, 0)
         self.layout.addWidget(QLabel('Filter Order:'), 0, 1)
         self.layout.addWidget(self.orderflt, 0, 2)
@@ -213,21 +209,6 @@ class MainWindow(QDialog):
         self.layout.addItem(self.verticalSpacer)
 
         self.plot.clicked.connect(self.pushNFP)
-        self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
-
-    def layoutBiasPlot(self):
-
-        default_dir = os.getcwd()+'/NFP'
-
-        self.layout.addWidget(self.export, 2, 0)
-        self.layout.addWidget(QLabel('Filter Order:'), 0, 1)
-        self.layout.addWidget(self.orderflt, 0, 2)
-        self.layout.addWidget(QLabel('Cutoff Freq.:'), 1, 1)
-        self.layout.addWidget(self.cutflt, 1, 2)
-        self.dirLoc.setText(default_dir)
-        self.layout.addItem(self.verticalSpacer)
-
-        self.plot.clicked.connect(self.pushBiasPlot)
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
 
     def layoutSingle(self):
@@ -288,19 +269,10 @@ class MainWindow(QDialog):
 
         order = int(self.orderflt.text())
         cutoff = float(self.cutflt.text())
+        biasplt = int(self.bplt.isChecked())
 
         try:
-            PlotWindow.plotBiasVerification(self, order, cutoff)
-        except(AttributeError, NotADirectoryError):
-            print(self.errortxt)
-
-    def pushBiasPlot(self):
-
-        order = int(self.orderflt.text())
-        cutoff = float(self.cutflt.text())
-
-        try:
-            PlotWindow.plotBiasVerification(self, order, cutoff)
+            PlotWindow.plotNFP(self, order, cutoff, biasplt)
         except(AttributeError, NotADirectoryError):
             print(self.errortxt)
 

@@ -7,29 +7,23 @@ from scipy.signal import butter, lfilter
 from scipy.stats import maxwell
 from scipy.interpolate import CubicSpline, splev, splrep
 from scipy import interpolate as inter
+import re
 
 from PyQt5.QtWidgets import QCheckBox
 
-
-def check_filename(filename):
-    # Check if the filename is in the correct format
-    #('Shot#XXXX_test - [num]V bias.txt'), where XXXX is the 4-digit shot
-    # identifier and [num] is the value of the bias potential. If format
-    # is correct, return bias potential value. Otherwise, raise a ValueError.
-    if (filename[0:5] != 'Shot#' or
-            filename[9:17] != '_test - ' or
-            filename[-10:] != 'V bias.txt'):
-        raise ValueError("Filename format is incorrect: %r" % filename)
-    return None
-
-
 def get_bias_potential(file):
 
-    check_filename(file)
-
     # Pull out bias voltage from filename as a float.
-    bias = file[16:-10].strip()
-    bias = float(bias)
+    bias_match = re.search('-?[ ]?[0-9]?[0-9][ ]?V',file)
+
+    if bias_match == None:
+        raise ValueError("\n\nFilename format is incorrect: %r" % file)
+
+    bias_string = bias_match.group()
+    bias_string = "".join(bias_string.split())
+    bias_string = bias_string[:-1]
+    
+    bias = float(bias_string)
 
     return bias
 
