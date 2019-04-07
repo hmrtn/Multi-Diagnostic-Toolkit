@@ -120,9 +120,9 @@ def plotDLP(self, order=2, cutoff=0.05, tof=False, DBDplot=False):
     else:
 
         [raw_I_vals, raw_bias_vals] = dlplt.get_data(self.fname)
-        lowpass_I_vals = dlplt.butter_filter(raw_I_vals, order, cutoff)
-        avg_I_vals = dlplt.butter_avg(lowpass_I_vals, raw_bias_vals)
-        data = dlplt.format_data(raw_bias_vals, avg_I_vals)
+        peak_I_vals_dic = dlplt.get_peak_vals(raw_I_vals, raw_bias_vals)
+        avg_peak_I_vals = dlplt.peak_avg(peak_I_vals_dic, raw_bias_vals)
+        data = dlplt.format_data(raw_bias_vals, avg_peak_I_vals)
         sectioned_data = dlplt.split_data(data)
         regression_data = dlplt.calculate_linear_regressions(sectioned_data)
 
@@ -268,8 +268,9 @@ def plotDLP(self, order=2, cutoff=0.05, tof=False, DBDplot=False):
 
         # Construct electron temp and number density output
 
-        T_str = r'$T_e$ ~ ' + str('%.2f' % round(electron_temp, 2)) + ' eV'
-        n_e_str =  (r'$n_e$ ~ '
+        T_str = (r'$T_e$ $\approx$ '
+                + str('%.2f' % round(electron_temp, 2)) + ' eV')
+        n_e_str =  (r'$n_e$ $\approx$ '
                 + '%.2E' % Decimal(str(electron_number_density))
                 + r' $\mathrm{m}^{-3}$')
 
@@ -313,8 +314,8 @@ def plotDLP(self, order=2, cutoff=0.05, tof=False, DBDplot=False):
              item.set_fontsize(20)
 
         plt.xlabel('Voltage (V)')
-        plt.ylabel(r'Current ($\mu$A)')
-        plt.title('Bias Voltage vs Current')
+        plt.ylabel(r'Peak Current ($\mu$A)')
+        plt.title('Bias Voltage vs Peak Current')
         plt.minorticks_on()
         plt.grid(which='major', alpha=0.5)
         plt.grid(which='minor', alpha=0.2)

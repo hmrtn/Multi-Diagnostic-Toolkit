@@ -19,7 +19,7 @@ import scipy.interpolate as interpolate
 import pandas as pd
 from scipy import stats as st
 from scipy import signal
-from scipy.signal import butter, lfilter
+from scipy.signal import butter, lfilter, find_peaks
 from scipy.stats import maxwell
 from scipy.interpolate import CubicSpline, splev, splrep
 from scipy import interpolate as inter
@@ -67,18 +67,22 @@ def get_data(name):
                     pass
             elif folder[-4:folder_name_length] == '.txt':
                 try:
-                    bias_data = np.ndfromtxt(
-                            folder,
-                            delimiter='\t',
-                            encoding="utf8")
+                    df = pd.read_csv(folder, header=None)
+                    bias_data = df.values
                 except:
                     try:
                         bias_data = np.ndfromtxt(
                                 folder,
-                                delimiter=',',
+                                delimiter=None,
                                 encoding="utf8")
                     except:
-                        pass
+                        try:
+                            bias_data = np.ndfromtxt(
+                                    folder,
+                                    delimiter=',',
+                                    encoding="utf8")
+                        except:
+                            pass
     try:
         # Remove all NaN values.
         bias_data_no_NaN = bias_data[~np.isnan(bias_data)]
@@ -96,70 +100,79 @@ def get_data(name):
     return [data, bias_data_out]
 
 
-def butter_filter(data, order, cutoff):
+def get_peak_vals(raw_current_data, bias_data):
 
-    buttered = {}
+    peak_current_data_dic = {}
+    if (bias_data[:,0] == 0).any() == True:
+        num_biases = len(bias_data) - 1
+    else:
+        num_biases = len(bias_data)
 
-    sos = signal.butter(order, cutoff, btype='low', analog=False, output='sos')
-
-    for key in data:
-        filtered = np.array(signal.sosfiltfilt(sos, data[key]))
-        buttered[key] = filtered
-
-    return buttered
-
-
-def butter_avg(buttered, bias_data):
-    avg_current_data_dic = {}
-    num_biases = len(bias_data)
-
-    for key in buttered:
+    for key in raw_current_data:
         # Make all values positive -- why are we doing this?
-        abs_val_buttered = np.absolute(buttered[key])
+        abs_val_raw_current_data = np.absolute(raw_current_data[key])
 
-        length_current_data = len(abs_val_buttered)
+        length_current_data = len(abs_val_raw_current_data)
 
         cutoff_index = (length_current_data-1)/num_biases
-        avg_current_data = np.zeros((num_biases,1))
+        peak_current_data = np.zeros((num_biases,1))
         for j in range(0,num_biases):
             temp = []
             starting_index = int(np.floor(j*cutoff_index))
             for i in range(starting_index, length_current_data):
                 # For each bias category, collect current values in a temp list
                 if (i >= j*cutoff_index) and (i < (j+1)*cutoff_index):
-                    temp.append(abs_val_buttered[i])
+                    temp.append(abs_val_raw_current_data[i])
                 if (i == length_current_data-1) and ((j+1) == num_biases):
-                    # Categorize the very last data point in abs_val_buttered
-                    temp.append(abs_val_buttered[-1])
+                    # Categorize the very last data point in
+                    # abs_val_raw_current_data
+                    temp.append(abs_val_raw_current_data[-1])
                 if i > (j+1)*cutoff_index:
                     break
-            # average the current values in the temp list and
-            # stores in the avg_current_data list, in microamperes
-            avg_current_data[j] = np.mean(temp) * CORRECTION_FACTOR * 1E6
+            # Finds the peak current values in the temp list and
+            # stores in the avg_peak_current_data list, in volts
+            _, temp_peak_dic = find_peaks(temp,
+                    height=np.mean(temp)*2)
+            peaks = temp_peak_dic['peak_heights']
+            peak_current_data[j] = np.max(peaks)
 
-        avg_current_data_dic[key] = np.array(avg_current_data)
+        peak_current_data_dic[key] = np.array(peak_current_data)
 
+    return peak_current_data_dic
+
+
+def peak_avg(peak_current_data_dic, bias_data):
+
+    avg_peak_vals =  np.zeros_like(bias_data)
+
+    start_num = 0
     if (bias_data[:,0] == 0).any() == True:
-        start_num = 1
+        end_num = len(bias_data) - 1
     else:
-        start_num = 0
+        end_num = len(bias_data)
 
-    end_num = len(bias_data)
-
-    avg =  np.zeros_like(bias_data)
-
-    for index in range(start_num, num_biases):
+    for index in range(start_num, end_num):
         temp = []
-        for key in avg_current_data_dic:
-            temp.append(avg_current_data_dic[key][index])
-        avg[index] = np.mean(temp)
+        for key in peak_current_data_dic:
+            temp.append(peak_current_data_dic[key][index])
+        # Convert mean voltage value into current, in microamperes
+        if (bias_data[:,0] == 0).any() == True:
+            new_index = index + 1
+        else:
+            new_index = index
 
-    return avg
+        avg_peak_vals[new_index] = (np.mean(temp)
+                * CORRECTION_FACTOR * 1E6)
 
-def aggregate_data(bias_data, avg_current_data):
-    # combine the data in bias_data and avg_current_data into one numpy array
-    data = np.concatenate((bias_data, avg_current_data), axis=1)
+    return avg_peak_vals
+
+
+def aggregate_data(bias_data, avg_peak_current_data):
+    # combine the data in bias_data and avg_peak_current_data
+    # into one numpy array
+    data = np.concatenate((bias_data, avg_peak_current_data), axis=1)
     return data
+
 
 def create_full_dataset(data):
 
@@ -221,12 +234,14 @@ def create_full_dataset(data):
 
     return full_dataset
 
-def format_data(bias_data, avg_current_data):
 
-    data = aggregate_data(bias_data, avg_current_data)
+def format_data(bias_data, avg_peak_current_data):
+
+    data = aggregate_data(bias_data, avg_peak_current_data)
     full_dataset = create_full_dataset(data)
 
     return full_dataset
+
 
 def split_data(data):
 
@@ -238,9 +253,6 @@ def split_data(data):
     # These cutoff values are from observation of 50+ data sets
     cutoff_point_1 = data[zero_V_index-1, 0] # V
     cutoff_point_2 = data[zero_V_index+1, 0] # V
-    # data[zero_V_index+1, 0]
-
-
 
     data_post_split = {}
 
@@ -273,6 +285,7 @@ def split_data(data):
     data_post_split['e_sat'] = e_sat
 
     return data_post_split
+
 
 def calculate_linear_regressions(data_post_split):
 
@@ -333,6 +346,7 @@ def calculate_linear_regressions(data_post_split):
 
     return linear_regression_data
 
+
 def calculate_saturation_values(
         linear_regression_data, tol=10**(-8), nargout=1):
 
@@ -382,6 +396,7 @@ def calculate_saturation_values(
 
         return saturation_values, outside_tolerances
 
+
 def temperature(v_sat):
 
     k_B = const.Boltzmann # J/K
@@ -393,8 +408,7 @@ def temperature(v_sat):
     return electron_temp
 
 
-def density(i_sat, v_sat):
-
+def density(v_sat, i_sat):
     # Cross-sectional area of the Langmuir probe used
     probe_cs_area = 1.749E-5 # m^2
 
@@ -409,8 +423,9 @@ def density(i_sat, v_sat):
     electron_temp_K = (q_e*v_sat) / (2*k_B) # K
 
     electron_number_density = (i_sat_Amps
-            * np.sqrt(ion_mass / (k_B*electron_temp_K))
-            / (q_e*probe_cs_area*np.exp(-0.5)))
+            / (q_e*probe_cs_area*m.exp(-0.5))
+            * m.sqrt(ion_mass / (k_B*electron_temp_K))
+            )
 
     return electron_number_density
 
