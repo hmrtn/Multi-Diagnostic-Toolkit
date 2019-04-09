@@ -56,7 +56,7 @@ def spline_fit(median, smooth, spline_num, rtrn=None):
         return xnew, splf
     elif rtrn is 'xy':
         return xnew, ynew
-        
+
 
 def plot_dict(dic):
 
@@ -66,8 +66,8 @@ def plot_dict(dic):
     plt.grid(which='minor', alpha=0.2)
     for k,v in dic.items():
         plt.title(re.split('/',k)[-1])
-        
-        if type(v) is not list: 
+
+        if type(v) is not list:
             plt.plot(np.arange(len(dic.get(k))), dic.get(k)[:,1])
         else:
             plt.plot(np.arange(len(v[0])), v[0])

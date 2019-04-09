@@ -1,3 +1,13 @@
+"""Bias Voltage Plotting Module
+
+This module contains the functions used to plot current density vs
+bias potential for the electric propulsion systems in the Advanced Propulsion
+Laboratory at the University of Washington.
+"""
+
+__version__ = '1.5'
+__author__ = 'Kaito Durkee'
+
 import sys
 import os
 import numpy as np
@@ -22,7 +32,7 @@ def get_bias_potential(file):
     bias_string = bias_match.group()
     bias_string = "".join(bias_string.split())
     bias_string = bias_string[:-1]
-    
+
     bias = float(bias_string)
 
     return bias

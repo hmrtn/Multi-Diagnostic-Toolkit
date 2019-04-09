@@ -1,3 +1,12 @@
+"""Nude Faraday Probe Data Plotting Module
+
+This module contains the functions used to plot current density vs
+radial position for the electric propulsion systems in the Advanced Propulsion
+Laboratory at the University of Washington.
+"""
+
+__author__ = 'Kaito Durkee'
+
 import sys
 import os
 import numpy as np
@@ -17,7 +26,7 @@ def get_radial_position(file):
     position_match = re.search('[0-9]?[0-9][.]?[0-9]?[0-9]?[ -]?[ ]?cm',file)
 
     if position_match == None:
-        raise ValueError("\n\nFilename format is incorrect: %r" % file)
+        raise ValueError("Filename format is incorrect: %r" % file)
 
     position_string = bias_match.group()
     position_string = "".join(position_string.split())

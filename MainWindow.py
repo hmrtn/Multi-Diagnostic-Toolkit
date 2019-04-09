@@ -1,7 +1,13 @@
-# APL
-# University of Washington
-# Hans Martin
+"""Main Window GUI Module
 
+This module contains the functions used to create the GUI and plot the desired
+graphs for the electric propulsion systems in the Advanced Propulsion
+Laboratory at the University of Washington.
+"""
+
+__version__ = '1.5.1'
+__author__ = 'Hans Martin'
+__contributors__ = ['Kaito Durkee']
 
 import sys
 import os
@@ -22,15 +28,13 @@ import lplt     # Import dependent libs for plotting
 import splt
 import PlotWindow
 
-VERSION = '1.5'
-
 class MainWindow(QDialog):
 
     def __init__(self, parent=None):
 
         super(MainWindow, self).__init__(parent)
 
-        self.setWindowTitle('Multi-Diagnostic Toolkit ' + VERSION)
+        self.setWindowTitle('Multi-Diagnostic Toolkit ' + __version__)
         self.setWindowIcon(QIcon('assets/ic_aplotter.png'))
         self.setMinimumSize(QSize(400, 420))    # Set main window dimensions
 
@@ -82,6 +86,7 @@ class MainWindow(QDialog):
         self.tts = QLineEdit('400')
         self.subplt = QCheckBox('Show Subplot')
         self.bplt = QCheckBox('Verify Bias')
+        self.DBDlplt = QCheckBox('DBD Plot')
         self.orderflt = QLineEdit('2')
         self.cutflt = QLineEdit('0.005')
         self.window = QLineEdit('9')
@@ -184,6 +189,7 @@ class MainWindow(QDialog):
         default_dir = os.getcwd()+'/DLP'
 
         self.layout.addWidget(self.tof, 0, 0)
+        self.layout.addWidget(self.DBDlplt, 1, 0)
         self.layout.addWidget(self.export, 2, 0)
         self.layout.addWidget(QLabel('Filter Order:'), 0, 1)
         self.layout.addWidget(self.orderflt, 0, 2)
@@ -259,9 +265,10 @@ class MainWindow(QDialog):
         order = int(self.orderflt.text())
         cutoff = float(self.cutflt.text())
         tof = self.tof.isChecked()
+        DBDlplt = self.DBDlplt.isChecked()
 
         try:
-            PlotWindow.plotDLP(self, order, cutoff, tof)
+            PlotWindow.plotDLP(self, order, cutoff, tof, DBDlplt)
         except(AttributeError, NotADirectoryError):
             print(self.errortxt)
 
