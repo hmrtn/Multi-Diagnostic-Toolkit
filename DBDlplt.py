@@ -28,6 +28,7 @@ from decimal import Decimal
 from PyQt5.QtWidgets import QCheckBox
 
 from ErrorClasses import FileError
+import warnings
 
 # System correction factor to convert voltages to currents
 CORRECTION_FACTOR = 0.004 # A/V
@@ -134,7 +135,13 @@ def get_peak_vals(raw_current_data, bias_data):
             _, temp_peak_dic = find_peaks(temp,
                     height=np.mean(temp)*2)
             peaks = temp_peak_dic['peak_heights']
-            peak_current_data[j] = np.max(peaks)
+            try:
+                peak_current_data[j] = np.max(peaks)
+            except ValueError:
+                peak_current_data[j] = 0
+                message = ("Current peak value set to 0 uA because " +
+                        "current peak could not be found.")
+                warnings.warn(message, RuntimeWarning)
 
         peak_current_data_dic[key] = np.array(peak_current_data)
 
