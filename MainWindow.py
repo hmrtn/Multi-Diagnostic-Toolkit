@@ -225,7 +225,7 @@ class MainWindow(QDialog):
 
     def layoutPower(self):
 
-        default_dir = os.getcwd()+'/DLP'+'/Scope Data - 05-20-19 Power Curve TEST'
+        default_dir = os.getcwd()+'/DLP'
 
         self.layout.addWidget(self.energy, 0, 0)
         self.dirLoc.setText(default_dir)
@@ -303,12 +303,10 @@ class MainWindow(QDialog):
 
     def pushPower(self):
 
-        energy = self.energy.isChecked()
-        PlotWindow.plotPower(self, energy)
-        # try:
-        #     PlotWindow.plotPower(self, energy)
-        # except(AttributeError, NotADirectoryError):
-        #     print(self.errortxt)
+        try:
+            PlotWindow.plotPower(self, energy)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
 
     def pushSingle(self):
 
