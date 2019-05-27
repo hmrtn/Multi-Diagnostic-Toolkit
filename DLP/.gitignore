@@ -106,3 +106,6 @@ venv.bak/
 # Data files
 /*
 !.gitignore
+
+# Excel files
+.xlsx
