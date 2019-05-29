@@ -410,9 +410,7 @@ def plotPower(self, energy=False):
     plt.plot(time_ns, voltage_kV*1e1, 'b-')
     plt.plot(time_ns, current_A, 'g-')
     plt.plot(time_ns, power_kW, 'k-')
-    # plt.plot(time_ns, voltage_V, 'b-')
-    # plt.plot(time_ns, current_A, 'g-')
-    # plt.plot(time_ns, power_W, 'k-')
+    
     plt.title(r'Power Plot - ' + self.fname)
     plt.xlabel(r'Time (ns)')
 

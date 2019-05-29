@@ -37,11 +37,6 @@ def get_data(name, energy_bool):
     data = {}
     os.chdir(name)
     dir = os.listdir()
-    # index = 0
-    # for folder in dir:
-    #     folder_name_length = len(folder)
-    #     if folder != '.gitignore':
-    #         if folder[-4:folder_name_length] != '.txt':
     try:
         for file in dir:
             filename_length = len(file)
@@ -73,42 +68,10 @@ def get_data(name, energy_bool):
                         data['energy'] = integrate.cumtrapz(data['power'], data['time'], initial=0) # J
                 except:
                     pass
-        # index += 1
     except:
         pass
-    # except UnboundLocalError:
-    #     message = ("Bias potentials text file could not be found:"
-    #             + "CHECK DIRECTORY")
-    #     raise FileError(message)
     return data
 
-
-# def butter_filter(data, order, cutoff):
-
-#     buttered = {}
-#     sos = signal.butter(order, cutoff, btype='low', analog=False, output='sos')
-
-#     correct = 1  # 0.004 # Is this value necessary?
-
-#     for key in data.keys():
-#         buttered.update({key: []})
-
-#         for shot in data[key]:
-#             V = np.sqrt(shot[:][:, 1]**2)
-#             corrected = correct * signal.sosfiltfilt(sos, V)
-#             buttered[key].append(corrected)
-
-#     return buttered
-
-
-# def butter_avg(buttered):
-
-#     avg = {}
-
-#     for key in buttered.keys():
-#         avg.update({key: (np.sum(buttered[key], axis=0) / len(buttered[key]))})
-
-#     return avg
 
 
 if __name__ == 'main':
