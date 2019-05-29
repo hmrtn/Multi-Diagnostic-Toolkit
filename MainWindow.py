@@ -303,6 +303,8 @@ class MainWindow(QDialog):
 
     def pushPower(self):
 
+        energy = bool(self.energy.isChecked())
+
         try:
             PlotWindow.plotPower(self, energy)
         except(AttributeError, NotADirectoryError):
