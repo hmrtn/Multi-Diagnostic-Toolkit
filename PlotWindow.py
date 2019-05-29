@@ -400,19 +400,19 @@ def plotPower(self, energy=False):
 
     time_ns = raw_data['time'] * 1e9
     voltage_V = raw_data['voltage']
-    # voltage_kV = raw_data['voltage'] * 1e-3
+    voltage_kV = raw_data['voltage'] * 1e-3
     current_A = raw_data['current']
     power_W = raw_data['power']
-    # power_kW = raw_data['power'] * 1e-3
+    power_kW = raw_data['power'] * 1e-3
         
 
     plt.figure(figsize=(9, 5))
-    # plt.plot(time_ns, voltage_kV, 'b-')
-    # plt.plot(time_ns, current_A*1e-1, 'g-')
-    # plt.plot(time_ns, power_kW*1e-2, 'k-')
-    plt.plot(time_ns, voltage_V, 'b-')
+    plt.plot(time_ns, voltage_kV*1e1, 'b-')
     plt.plot(time_ns, current_A, 'g-')
-    plt.plot(time_ns, power_W, 'k-')
+    plt.plot(time_ns, power_kW, 'k-')
+    # plt.plot(time_ns, voltage_V, 'b-')
+    # plt.plot(time_ns, current_A, 'g-')
+    # plt.plot(time_ns, power_W, 'k-')
     plt.title(r'Power Plot - ' + self.fname)
     plt.xlabel(r'Time (ns)')
 
@@ -430,12 +430,15 @@ def plotPower(self, energy=False):
 
     if energy:
         energy_J = raw_data['energy']
-        plt.plot(time_ns, energy_J, 'm-')
+        energy_mJ = energy_J * 1e3
+        plt.plot(time_ns, energy_mJ*1e1, 'm-')
         h.append(mpatches.Patch(color='magenta', label=plot_labels[3]))
-        plt.ylabel(r'Voltage (kV) / Current $(10^{-1} \, \mathrm{A})$ / Power $(10^{-2} \, \mathrm{kW})$ / Energy (J)')
+        plt.ylabel(r'Voltage $\left(10^{-1} \, \mathrm{kV}\right)$'
+                + r' / Current (A) / Power (kW) / Energy $\left(10^{-1}'
+                + r' \, \mathrm{mJ}\right)$')
     else:
-        # plt.ylabel(r'Voltage (kV) / Current $(10^{-1} \, \mathrm{A})$ / Power $(10^{-2} \, \mathrm{kW})$')
-        plt.ylabel(r'Voltage (V) / Current (A) / Power (W)')
+        plt.ylabel(r'Voltage ($10^{-1} \, \mathrm{kV}$) / Current (A) / Power (kW)')
+        # plt.ylabel(r'Voltage (V) / Current (A) / Power (W)'))
 
 
     legend(loc='best', borderaxespad=0, handles=h)
