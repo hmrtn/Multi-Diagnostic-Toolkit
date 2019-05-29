@@ -65,12 +65,12 @@ def get_data(name, energy_bool):
                     pass
                 try:
                     data['time'] = time_data
-                    data['voltage'] = voltage_data
-                    data['current'] = current_data
-                    data['power'] = voltage_data * current_data  
+                    data['voltage'] = voltage_data * 100 # V/V scaling factor
+                    data['current'] = current_data * 2 # A/V scaling factor
+                    data['power'] = data['voltage'] * data['current'] # W
 
                     if energy_bool:
-                        data['energy'] = integrate.cumtrapz(data['power'], data['time'], initial=0)
+                        data['energy'] = integrate.cumtrapz(data['power'], data['time'], initial=0) # J
                 except:
                     pass
         # index += 1
