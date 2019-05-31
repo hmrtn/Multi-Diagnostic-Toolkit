@@ -16,17 +16,18 @@ from scipy.signal import butter, lfilter
 from scipy.stats import maxwell
 from scipy.interpolate import CubicSpline, splev, splrep
 from scipy import interpolate as inter
+import re
 
 from PyQt5.QtWidgets import QCheckBox
 
 
-def get_radial_position(file):
+def get_radial_position(filename):
 
     # Pull out radial position from filename as a float.
-    position_match = re.search('[0-9]?[0-9][.]?[0-9]?[0-9]?[ -]?[ ]?cm',file)
+    position_match = re.search('[0-9]?[0-9][.]?[0-9]?[0-9]?[ -]?[ ]?cm',filename)
 
     if position_match == None:
-        raise ValueError("Filename format is incorrect: %r" % file)
+        raise ValueError("Filename format is incorrect: %r" % filename)
 
     position_string = bias_match.group()
     position_string = "".join(position_string.split())

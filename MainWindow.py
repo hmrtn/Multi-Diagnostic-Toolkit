@@ -25,6 +25,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navbar
 
 import rplt
 import lplt     # Import dependent libs for plotting
+import pplt
 import splt
 import PlotWindow
 
@@ -46,6 +47,7 @@ class MainWindow(QDialog):
                  'Langmuir',
                  'REFA',
                  'Nude Faraday',
+                 'Input Power',
                  'Single Dataset']
 
         self.choose = QComboBox(self)
@@ -87,6 +89,7 @@ class MainWindow(QDialog):
         self.subplt = QCheckBox('Show Subplot')
         self.bplt = QCheckBox('Verify Bias')
         self.DBDlplt = QCheckBox('DBD Plot')
+        self.energy = QCheckBox('Plot Energy Curve')
         self.orderflt = QLineEdit('2')
         self.cutflt = QLineEdit('0.005')
         self.window = QLineEdit('9')
@@ -134,6 +137,9 @@ class MainWindow(QDialog):
             self.layoutNFP()
 
         elif ind is 4:
+            self.layoutPower()
+
+        elif ind is 5:
 
             self.layoutSingle()
 
@@ -217,6 +223,18 @@ class MainWindow(QDialog):
         self.plot.clicked.connect(self.pushNFP)
         self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
 
+    def layoutPower(self):
+
+        default_dir = os.getcwd()+'/DLP'
+
+        self.layout.addWidget(self.energy, 0, 0)
+        self.dirLoc.setText(default_dir)
+        self.layout.addItem(self.verticalSpacer)
+
+        self.plot.clicked.connect(self.pushPower)
+        self.browseButton.clicked.connect(lambda: self.getFiles('folder'))
+
+
     def layoutSingle(self):
 
         self.layout.addWidget(self.ptype, 1, 0)
@@ -280,6 +298,15 @@ class MainWindow(QDialog):
 
         try:
             PlotWindow.plotNFP(self, order, cutoff, biasplt)
+        except(AttributeError, NotADirectoryError):
+            print(self.errortxt)
+
+    def pushPower(self):
+
+        energy = bool(self.energy.isChecked())
+
+        try:
+            PlotWindow.plotPower(self, energy)
         except(AttributeError, NotADirectoryError):
             print(self.errortxt)
 

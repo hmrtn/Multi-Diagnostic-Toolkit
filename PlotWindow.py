@@ -30,8 +30,9 @@ from pylab import *
 
 import rplt
 import lplt     # Import dependent libs for plotting
-import splt
 import bplt
+import pplt
+import splt
 import DBDlplt as dlplt
 
 from ErrorClasses import NotImplementedError
@@ -81,6 +82,8 @@ def plotRPA(self, order=2, cutoff=0.04, tts=400, medWin=9,
     plt.grid(which='major', alpha=0.5)
     plt.grid(which='minor', alpha=0.2)
     plt.show()
+
+
 
 def plotDLP(self, order=2, cutoff=0.05, tof=False, DBDplot=False):
     if DBDplot == False:
@@ -383,6 +386,66 @@ def plotNFP(self, order=2, cutoff=0.05, biasplt=False):
         plt.grid(which='major', alpha=0.5)
         plt.grid(which='minor', alpha=0.2)
         plt.show()
+
+
+
+def plotPower(self, energy=False):
+    raw_data = pplt.get_data(self.fname, energy)
+    # lowpass_rpa = rplt.butter_filter(raw_rpa, order, cutoff)
+    # slice_rpa = rplt.time_slice(lowpass_rpa, tts)
+    # median_rpa = rplt.median_filter(slice_rpa, medWin)
+    # x, spl = rplt.spline_fit(median_rpa, smooth, splinePts, 'spline')
+    # x, y = rplt.ivdf(x, spl)
+
+
+    time_ns = raw_data['time'] * 1e9
+    voltage_V = raw_data['voltage']
+    voltage_kV = raw_data['voltage'] * 1e-3
+    current_A = raw_data['current']
+    power_W = raw_data['power']
+    power_kW = raw_data['power'] * 1e-3
+        
+
+    plt.figure(figsize=(9, 5))
+    plt.plot(time_ns, voltage_kV*1e1, 'b-')
+    plt.plot(time_ns, current_A, 'g-')
+    plt.plot(time_ns, power_kW, 'k-')
+    
+    plt.title(r'Power Plot - ' + self.fname)
+    plt.xlabel(r'Time (ns)')
+
+    # Construct legend
+    h = []
+
+    plot_labels = ['Voltage',
+            'Current',
+            'Power',
+            'Energy']
+
+    h.append(mpatches.Patch(color='blue', label=plot_labels[0]))
+    h.append(mpatches.Patch(color='green', label=plot_labels[1]))
+    h.append(mpatches.Patch(color='black', label=plot_labels[2]))
+
+    if energy:
+        energy_J = raw_data['energy']
+        energy_mJ = energy_J * 1e3
+        plt.plot(time_ns, energy_mJ*1e1, 'm-')
+        h.append(mpatches.Patch(color='magenta', label=plot_labels[3]))
+        plt.ylabel(r'Voltage $\left(10^{-1} \, \mathrm{kV}\right)$'
+                + r' / Current (A) / Power (kW) / Energy $\left(10^{-1}'
+                + r' \, \mathrm{mJ}\right)$')
+    else:
+        plt.ylabel(r'Voltage ($10^{-1} \, \mathrm{kV}$) / Current (A) / Power (kW)')
+        # plt.ylabel(r'Voltage (V) / Current (A) / Power (W)'))
+
+
+    legend(loc='best', borderaxespad=0, handles=h)
+    # , prop={'size': 18}
+    plt.minorticks_on()
+    plt.grid(which='major', alpha=0.5)
+    plt.grid(which='minor', alpha=0.2)
+    plt.show()
+
 
 
 def plotSingle(self, order=2, cutoff=0.05, medWin=9,
